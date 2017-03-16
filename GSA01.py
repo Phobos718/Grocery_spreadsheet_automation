@@ -17,7 +17,6 @@ DB_item_count = int(DB.cell(2, 5).value)
 def refresh_prices():
     print '\nLoading pages...'
     links = [urllib2.urlopen(DB.cell(i + 2, 2).value) for i in range(DB_item_count)]
-    #maybe if page comes here as a list comprehension it'd be faster... maybe
     price_list = []
 
     print '\nFetching prices data...'
@@ -30,16 +29,23 @@ def refresh_prices():
         DB.update_cell(2 + i, 3, price_list[i])
 
 def update_order(sheet_option):
+    sheet_list = [Erik_N, Les, Erik_S]
+    log = open('log.txt','w+')
+    for sheet in sheet_list:
+        log.write(sheet.export())
+    log.close()
+
     if sheet_option == '':
         for i in range(DB_item_count):
             value = (int(Erik_N.cell( i + 2, 2).value) +
                     int(Erik_S.cell( i + 2, 2).value) +
                     int(Les.cell( i + 2, 2).value) +
                     int(Order.cell( i + 2, 2).value))
-            Order.update_cell( 2 + i, 2, value)
+            Order.update_cell( i + 2, 2, value)
+            for sheet in sheet_list:
+                sheet.update_cell( i + 2, 2, 0)
 
     else:
-        sheet_list = [Erik_N, Erik_S, Les]
         for i in range(DB_item_count):
             value = int(Order.cell( i + 2, 2).value)
             for opt in sheet_option:
@@ -48,14 +54,16 @@ def update_order(sheet_option):
             Order.update_cell( 2 + i, 2, value)
 
 
-
 option = ''
 while option != 'y' and option != 'n':
     option = raw_input('Would you like to refresh prices? [y/n]\n')
     if option == 'y':
         refresh_prices()
     elif option == 'n':
-        print 'whatever man'
         break
 
-option = raw_input('Select sheet to add to orders or press "Enter" to add all.\n[1]Mucsu\n[2]Nardu\n[3]Suplu\n')
+option = raw_input( 'Select sheet to add to orders (enter digits in any order)'
+                    ' or press "Enter" to add all.\n[1]Mucsu\n[2]Nardu\n[3]Suplu\n' )
+
+
+update_order(option)
