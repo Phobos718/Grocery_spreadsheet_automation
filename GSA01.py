@@ -12,11 +12,12 @@ Erik_S = client.open('vasarlas').worksheet('Suplu')
 Les = client.open('vasarlas').worksheet('Mucsu')
 Order = client.open('vasarlas').worksheet('Order')
 DB = client.open('vasarlas').worksheet('DB')
-DB_item_count = int(DB.cell(2, 5).value)
+DB_item_count = int(DB.cell(2, 8).value)
 
 def refresh_prices():
     print '\nLoading pages...'
     links = [urllib2.urlopen(DB.cell(i + 2, 2).value) for i in range(DB_item_count)]
+    #maybe if page comes here as a list comprehension it'd be faster... maybe
     price_list = []
 
     print '\nFetching prices data...'
@@ -30,7 +31,7 @@ def refresh_prices():
 
 def update_order(sheet_option):
     sheet_list = [Erik_N, Les, Erik_S]
-    log = open('log.txt','w+')
+    log = open('log.csv','w+')
     for sheet in sheet_list:
         log.write(sheet.export())
     log.close()
@@ -40,19 +41,27 @@ def update_order(sheet_option):
             value = (int(Erik_N.cell( i + 2, 2).value) +
                     int(Erik_S.cell( i + 2, 2).value) +
                     int(Les.cell( i + 2, 2).value) +
-                    int(Order.cell( i + 2, 2).value))
-            Order.update_cell( i + 2, 2, value)
+                    int(DB.cell( i + 2, 4).value))
+            DB.update_cell( i + 2, 4, value)
             for sheet in sheet_list:
                 sheet.update_cell( i + 2, 2, 0)
 
     else:
         for i in range(DB_item_count):
-            value = int(Order.cell( i + 2, 2).value)
+            value = int(DB.cell( i + 2, 4).value)
             for opt in sheet_option:
                 opt = int(opt) - 1
                 value += int(sheet_list[opt].cell( i + 2, 2).value)
-            Order.update_cell( 2 + i, 2, value)
+            DB.update_cell( 2 + i, 4, value)
 
+def log_and_flush():
+    sheet_list = [Erik_N, Les, Erik_S]
+    log = open('log.csv','w+')
+    for sheet in sheet_list:
+        log.write(sheet.export())
+    log.close()
+    for sheet in sheet_list:
+        sheet.update_cell( i + 2, 2, 0)
 
 option = ''
 while option != 'y' and option != 'n':
