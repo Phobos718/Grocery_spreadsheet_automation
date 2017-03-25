@@ -19,15 +19,22 @@ def refresh_prices():
     links = [urllib2.urlopen(DB.cell(i + 2, 2).value) for i in range(DB_item_count)]
     #maybe if page comes here as a list comprehension it'd be faster... maybe
     price_list = []
+    promo_list = []
 
-    print '\nFetching prices data...'
+    print '\nFetching prices'
     for link in links:
         page = BeautifulSoup(link, 'html.parser')
         price_list.append( page.find('meta', itemprop='price')['content'].replace('.',',') )
+        if page.find('div', class_='onOffer') is not None:
+            promo_list.append( page.find('div', class_='onOffer').span.text )
+        else: 
+            promo_list.append( '-' )
 
     print '\nUpdating spreadsheet...'
     for i in range(DB_item_count):
         DB.update_cell(2 + i, 3, price_list[i])
+        DB.update_cell(2 + i, 9, promo_list[i])
+    
 
 def update_order(sheet_option):
     sheet_list = [Erik_N, Les, Erik_S]
@@ -62,6 +69,9 @@ def log_and_flush():
     log.close()
     for sheet in sheet_list:
         sheet.update_cell( i + 2, 2, 0)
+
+
+
 
 option = ''
 while option != 'y' and option != 'n':
