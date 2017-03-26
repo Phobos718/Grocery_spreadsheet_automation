@@ -26,9 +26,13 @@ def refresh_prices():
         page = BeautifulSoup(link, 'html.parser')
         price_list.append( page.find('meta', itemprop='price')['content'].replace('.',',') )
         if page.find('div', class_='onOffer') is not None:
-            promo_list.append( page.find('div', class_='onOffer').span.text )
+            promo_details = page.find('div', class_='onOffer').span.text
+            promo_list.append( promo_details.partition('.')[0] ) 
+
         else: 
             promo_list.append( '-' )
+
+    print promo_list
 
     print '\nUpdating spreadsheet...'
     for i in range(DB_item_count):
@@ -61,7 +65,7 @@ def update_order(sheet_option):
                 value += int(sheet_list[opt].cell( i + 2, 2).value)
             DB.update_cell( 2 + i, 4, value)
 
-def log_and_flush():
+def log_and_reset():
     sheet_list = [Erik_N, Les, Erik_S]
     log = open('log.csv','w+')
     for sheet in sheet_list:
@@ -82,7 +86,8 @@ while option != 'y' and option != 'n':
         break
 
 option = raw_input( 'Select sheet to add to orders (enter digits in any order)'
-                    ' or press "Enter" to add all.\n[1]Mucsu\n[2]Nardu\n[3]Suplu\n' )
+                    ' or press "Enter" to save logs and reset sheet.'
+                    '\n[1]Mucsu\n[2]Nardu\n[3]Suplu\n' )
 
 
 update_order(option)
