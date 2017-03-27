@@ -17,7 +17,6 @@ DB_item_count = int(DB.cell(2, 8).value)
 def refresh_prices():
     print '\nLoading pages...'
     links = [urllib2.urlopen(DB.cell(i + 2, 2).value) for i in range(DB_item_count)]
-    #maybe if page comes here as a list comprehension it'd be faster... maybe
     price_list = []
     promo_list = []
 
